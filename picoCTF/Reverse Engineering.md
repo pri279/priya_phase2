@@ -1,5 +1,30 @@
 # 1. GDB baby step 1
 
+## Description
+> Can you figure out what is in the eax register at the end of the main function? Put your answer in the picoCTF flag format: picoCTF{n} where n is the contents of the eax register in the decimal number base. If the answer was 0x11 your flag would be picoCTF{17}.
+Disassemble this.
+
+## Solution
+First I opened the debugger0_a file with gdb and used disassemble main command to view the assembly instructions in main. 
+<img width="956" height="696" alt="image" src="https://github.com/user-attachments/assets/b77b534e-64ab-48ad-b183-c93314ff40a0" />
+
+Here, I was able to find the eax register and since the value was given in hex right next to it, I was able to convert it using print command.
+
+<img width="277" height="98" alt="image" src="https://github.com/user-attachments/assets/3f3b5b77-5b9e-4271-83a0-b52889901a80" />
+
+Enclosing this with picoCTF{} I was able to obtain the flag.
+
+## Flag
+```
+picoCTF{549698}
+```
+
+## Concepts Learnt:
+- Learnt how to use gdb for debugging and a few basic commands (from GDB Test Drive <https://play.picoctf.org/practice/challenge/273>
+
+## References
+<https://play.picoctf.org/practice/challenge/273>
+
 ***
 
 # 2. ARMssembly 1
