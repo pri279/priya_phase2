@@ -88,4 +88,46 @@ I learnt about how to analyse a Python code and decrypt it to obtain the flag
 
 # 3. miniRSA
 
+## Description
+> Let's decrypt this: ciphertext? Something seems a bit small.
+
+## Solution
+ciphertext file has the following content:
+```
+
+N: 29331922499794985782735976045591164936683059380558950386560160105740343201513369939006307531165922708949619162698623675349030430859547825708994708321803705309459438099340427770580064400911431856656901982789948285309956111848686906152664473350940486507451771223435835260168971210087470894448460745593956840586530527915802541450092946574694809584880896601317519794442862977471129319781313161842056501715040555964011899589002863730868679527184420789010551475067862907739054966183120621407246398518098981106431219207697870293412176440482900183550467375190239898455201170831410460483829448603477361305838743852756938687673
+e: 3
+
+ciphertext (c): 2205316413931134031074603746928247799030155221252519872649649212867614751848436763801274360463406171277838056821437115883619169702963504606017565783537203207707757768473109845162808575425972525116337319108047893250549462147185741761825125 
+```
+From this, I understood that since the value of e is small, it would be easier to decode the RSA encryption than if value of e is large.
+In RSA encryption, the ciphertext c=m^e/(mod(N)) where m is the original message as a number, e is exponent and N is a large number.
+But if m^e < N then the N essentially doesnt have a role.
+So the formula simplifies to c=m^e, in this case, c=m^3 ie., cube root of c = m
+
+First, take the length of initial bit and then divide by 3 to find the initial length of the message and make a number out of that size using 1 <<. 
+Using a loop, I try to continue guessing this number by squaring the number and checking how many times this number can fit into the original number using c//(x*x).
+The loop ends if the number is greater than or equal to the previous iteration and finally bits is converted into bytes then to text.
+
+```Python3
+c=2205316413931134031074603746928247799030155221252519872649649212867614751848436763801274360463406171277838056821437115883619169702963504606017565783537203207707757768473109845162808575425972525116337319108047893250549462147185741761825125 
+x = 1 << ((c.bit_length() + 2)//3)          
+while True:
+   y = (2*x + c//(x*x)) // 3
+   if y >= x:
+       m = x; break
+   x = y
+plaintext = x.to_bytes((x.bit_length()+7)//8, 'big')
+print(plaintext.decode())
+```
+
+## Flag:
+```
+picoCTF{n33d_a_lArg3r_e_606ce004}
+```
+## Concepts Learnt:
+I learnt how RSA encryptions can be weak if a small value of e is used. And how to decode them if that is the case. I also learnt about the Newtons method of finding cube root of large numbers with precision
+
+## References
+<https://www.programmersought.com/article/29736650877/>
 ***
