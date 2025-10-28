@@ -53,6 +53,60 @@ https://steghide.sourceforge.net/documentation/manual.pdf
 
 # 2. tunn3l v1s10n
 
+## Description
+> We found this file. Recover the flag.
+
+## Solution
+First, I downloaded the given file and used exiftool to check for any info on the file.
+```bash
+priya@DESKTOP-1TEEMJT:~$ exiftool tunn3l_v1s10n
+ExifTool Version Number         : 12.40
+File Name                       : tunn3l_v1s10n
+Directory                       : .
+File Size                       : 2.8 MiB
+File Modification Date/Time     : 2025:10:28 23:36:11+05:30
+File Access Date/Time           : 2025:10:28 23:36:51+05:30
+File Inode Change Date/Time     : 2025:10:28 23:36:44+05:30
+File Permissions                : -rw-r--r--
+File Type                       : BMP
+File Type Extension             : bmp
+MIME Type                       : image/bmp
+BMP Version                     : Unknown (53434)
+Image Width                     : 1134
+Image Height                    : 306
+Planes                          : 1
+Bit Depth                       : 24
+Compression                     : None
+Image Length                    : 2893400
+Pixels Per Meter X              : 5669
+Pixels Per Meter Y              : 5669
+Num Colors                      : Use BitDepth
+Num Important Colors            : All
+Red Mask                        : 0x27171a23
+Green Mask                      : 0x20291b1e
+Blue Mask                       : 0x1e212a1d
+Alpha Mask                      : 0x311a1d26
+Color Space                     : Unknown (,5%()
+Rendering Intent                : Unknown (826103054)
+Image Size                      : 1134x306
+Megapixels                      : 0.347
+```
+Here it says file type to be bmp so I changed the file to tunn3l_v1s10n.bmp and opened it using Photoshop.
+<img width="1423" height="383" alt="image" src="https://github.com/user-attachments/assets/cbe9aaf4-06d8-4bdd-b0c8-29c57b8593cb" />
+This was not the flag but proved that I was in the right direction. 
+Then I searched Google about BMP files and saw that their hex codes has the values of file size, width, height, color etc. So using an online hex editor tool <https://hexed.it/>, I saw that at the 22nd byte was that representing the height of the image. By increasing it to 43 04 00 00 which is 0x443 = 1091. I was able to open the image and obtain the flag.
+<img width="769" height="737" alt="image" src="https://github.com/user-attachments/assets/3e113383-1fdc-4e0a-af49-a152915807bf" />
+
+
+## Flag:
+```
+picoCTF{qu1t3_a_v13w_2020}
+```
+## Concepts Learnt:
+I learnt about the structure of BMP files and how you can play around with certain hex values to change various properties of the original image.
+
+## Resources
+<https://www.ece.ualberta.ca/~elliott/ee552/studentAppNotes/2003_w/misc/bmp_file_format/bmp_file_format.htm>
 ***
 
 # 3. m00nwalk
