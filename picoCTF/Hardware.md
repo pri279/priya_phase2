@@ -21,6 +21,33 @@ nite{100010011000}
 
 # 2. I like Logic
 
+## Description
+> i like logic and i like files, apparently, they have something in common, what should my next step be.
+
+## Solution
+First I searched up how I can open .sal files and found a software called logic2 and installed it. This matched with the challenge description which told me I was in the right direction.
+I opened the challenge.sal file given using Logic and saw that there was a square wave on the 3rd channel.
+I converted the data to ASCII and got a long string of text.
+<img width="1481" height="944" alt="image" src="https://github.com/user-attachments/assets/8c7a71c1-c931-4f8c-ae28-7795aaafb969" />
+
+On zooming in and searching '{', I went to one part of the string that said:
+```
+ird."\r\n\r\nFCSC{b1dee4eeadf6c4e60aeb142b0b486344e64b12b40d1046de95c89ba5e23a9925}\r\n\r\n"A pterodactyl."\r\n\r\n"That's what HE says.  He
+```
+From here I was able to get the flag.
+
+## Flag
+```
+FCSC{b1dee4eeadf6c4e60aeb142b0b486344e64b12b40d1046de95c89ba5e23a9925}
+```
+
+## Concepts Learnt
+I understood how to access .sal files and also how to analyse square wave signals given.
+It's full form is Security Audit Log (SAL)
+
+## References 
+<https://file.org/extension/sal#salealelogic2captureformat>
+
 ***
 
 # 3. Bare Metal Alchemist
