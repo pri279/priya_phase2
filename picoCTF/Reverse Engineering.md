@@ -29,6 +29,106 @@ picoCTF{549698}
 
 # 2. ARMssembly 1
 
+## Description
+> For what argument does this program print `win` with variables 85, 6 and 3? File: chall_1.S Flag format: picoCTF{XXXXXXXX} -> (hex, lowercase, no 0x, and 32 bits. ex. 5614267 would be picoCTF{0055aabb})
+
+## Solution
+Given is an ARM v-8 assembly code which basically does a few mathematical steps and is a simple password checking program
+```
+	.arch armv8-a
+	.file	"chall_1.c"
+	.text
+	.align	2
+	.global	func
+	.type	func, %function
+func:
+	sub	sp, sp, #32
+	str	w0, [sp, 12]
+	mov	w0, 85
+	str	w0, [sp, 16]
+	mov	w0, 6
+	str	w0, [sp, 20]
+	mov	w0, 3
+	str	w0, [sp, 24]
+	ldr	w0, [sp, 20]
+	ldr	w1, [sp, 16]
+	lsl	w0, w1, w0
+	str	w0, [sp, 28]
+	ldr	w1, [sp, 28]
+	ldr	w0, [sp, 24]
+	sdiv	w0, w1, w0
+	str	w0, [sp, 28]
+	ldr	w1, [sp, 28]
+	ldr	w0, [sp, 12]
+	sub	w0, w1, w0
+	str	w0, [sp, 28]
+	ldr	w0, [sp, 28]
+	add	sp, sp, 32
+	ret
+	.size	func, .-func
+	.section	.rodata
+	.align	3
+.LC0:
+	.string	"You win!"
+	.align	3
+.LC1:
+	.string	"You Lose :("
+	.text
+	.align	2
+	.global	main
+	.type	main, %function
+main:
+	stp	x29, x30, [sp, -48]!
+	add	x29, sp, 0
+	str	w0, [x29, 28]
+	str	x1, [x29, 16]
+	ldr	x0, [x29, 16]
+	add	x0, x0, 8
+	ldr	x0, [x0]
+	bl	atoi
+	str	w0, [x29, 44]
+	ldr	w0, [x29, 44]
+	bl	func
+	cmp	w0, 0
+	bne	.L4
+	adrp	x0, .LC0
+	add	x0, x0, :lo12:.LC0
+	bl	puts
+	b	.L6
+.L4:
+	adrp	x0, .LC1
+	add	x0, x0, :lo12:.LC1
+	bl	puts
+.L6:
+	nop
+	ldp	x29, x30, [sp], 48
+	ret
+	.size	main, .-main
+	.ident	"GCC: (Ubuntu/Linaro 7.5.0-3ubuntu1~18.04) 7.5.0"
+	.section	.note.GNU-stack,"",@progbits
+```
+In the function, it stores user input into the stack, then adds 85, 6 and 3 in positions 12,16,20,and 24.
+Next it takes 6 and 85 as w0 and w1 and operates left shift on it (85 x 64 = 5440) and puts 5440 into 28th position.
+Using sdiv command, it divides 5440/3 = 1813 and puts it in 28th position.
+Next it subtracts 1813-(user input) and stores it in 28th position and returns that value.
+
+Now in the main function, it stores the user input and converts it from string to number using atoi, calls the function explained above and finally compares if its zero. If it is, it goes to .L4 which says "You win!"
+So basically the 1813-(user input) must be 0 for the flag. Hence, user input must be 1813.
+Converting to 32 bit hexadecimal, 0x00000715.
+
+## Flag
+```
+picoCTF{00000715}
+```
+
+## Concepts Learnt:
+- LSL : rd, rn, rm => rd = rn << rm
+- SDIV : rd, rn, rm => rd = rn ÷ rm ;  Signed Divide divides a 32-bit signed integer register value by a 32-bit signed integer register value, and writes the result to the destination register.
+- SUB{S} : rd, rn, op2 => rd = rn - op2
+- atoi : ascii to integer
+
+## References
+<https://courses.cs.washington.edu/courses/cse469/19wi/arm64.pdf>
 ***
 
 # 3. vault-door-3
