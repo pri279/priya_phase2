@@ -1,5 +1,138 @@
 # 1. rsa_oracle
 
+## Description
+> Can you abuse the oracle?
+An attacker was able to intercept communications between a bank and a fintech company. They managed to get the message (ciphertext) and the password that was used to encrypt the message.
+After some intensive reconassainance they found out that the bank has an oracle that was used to encrypt the password and can be found here nc titan.picoctf.net 60447. Decrypt the password and use it to decrypt the message. The oracle can decrypt anything except the password.
+
+## Solution
+First, I wanted to see what would happen if I directly tried to decrypt the password.enc file.
+```bash
+priya@DESKTOP-1TEEMJT:~$ nc titan.picoctf.net 60447
+*****************************************
+****************THE ORACLE***************
+*****************************************
+what should we do for you?
+E --> encrypt D --> decrypt.
+D
+Enter text to decrypt: 4228273471152570993857755209040611143227336245190875847649142807501848960847851973658239485570030833999780269457000091948785164374915942471027917017922546
+Lol, good try, can't decrypt that for you. Be creative and good luck
+
+what should we do for you?
+E --> encrypt D --> decrypt.
+```
+Obviously that did not work. So our goal is to somehow trick the oracle into giving us the answers. To do so, I took encrypted values of 1,2,3,4 to figure out value of N using the following Python code:
+```Python
+import math
+data = [(49, 4374671741411819653095065203638363839705760144524191633605358134684143978321095859047126585649272872908765432040943055399247499744070371810470682366100689),
+        (50, 4707619883686427763240856106433203231481313994680729548861877810439954027216515481620077982254465432294427487895036699854948548980054737181231034760249505),
+        (51,  1998517197048216725617978890728205902760633363770165103499700157925986170022682604311921651991344892635565706489644418147980643978563559991322776155635395),
+        (52, 3993239489061277327472930109138093827255646312769901312414509207541733524779884801267968848884701166599834406248783129646083261476137481855550108336137485),]
+def Find_N(data, e=65537):
+        a, b = data[0] #unpacking the tuple
+        val_N = b - pow(a, e)
+        for i,j in data[1:]:
+            tmp = j - pow(i, e)
+            val_N = math.gcd(tmp, val_N)
+        return abs(val_N)
+N=Find_N(data)
+print("Value of N is",N)
+```
+The logic behind this is: (ciphertext)=m^e * (mod N) => c - m^e = N * k. And k is found using GCD method thereby finally leading us to N
+```output
+Value of N is 5507598452356422225755194020880876452588463543445995226287547479009566151786764261801368190219042978883834809435145954028371516656752643743433517325277971
+```
+Next, since RSA has a multiplicative property, I can multiply the value with any number like 2,3,4...etc and make the oracle decrypt it and simply divide that number to get the actual flag. Here, I will use x=10.
+```Python
+password= int(4228273471152570993857755209040611143227336245190875847649142807501848960847851973658239485570030833999780269457000091948785164374915942471027917017922546)   
+x=10
+encrypted= (password * pow(x, e, N)) % N
+print("Modified value is",encrypted)
+```
+```output
+Modified value is 2246069766871706352813845635896283550427369688733816925667491485440565630208989627729225212984783125979682554685302094776744105380218282706364056056744223
+```
+```bash
+what should we do for you?
+E --> encrypt D --> decrypt.
+D
+Enter text to decrypt: 2246069766871706352813845635896283550427369688733816925667491485440565630208989627729225212984783125979682554685302094776744105380218282706364056056744223
+decrypted ciphertext as hex (c ^ d mod n): 3ebcbe23c3a
+decrypted ciphertext: ëËâ<:
+
+what should we do for you?
+E --> encrypt D --> decrypt.
+```
+Now that I got the decrypted value of our fake password, I have to reverse it back to the one I require using this code:
+```Python
+# after checking the hex value in the oracle:
+fake_hex = "3ebcbe23c3a"
+p2 = int(fake_hex, 16)  #to conv to integer
+inv_s = pow(x, -1, N)
+m = (p2 * inv_s) % N
+
+k = (N.bit_length() + 7) // 8
+m_bytes = m.to_bytes(k, "big")
+
+print("m:", m_bytes.rstrip(b'\x00').decode('utf-8'))
+```
+```output
+m: da099
+```
+Finally, I used openssl command (mentioned in the hints) I decrypted the secret.enc with the retrieved `da099` as the password:
+```bash
+priya@DESKTOP-1TEEMJT:~$ openssl enc -aes-256-cbc -d -in secret.enc
+enter AES-256-CBC decryption password:
+*** WARNING : deprecated key derivation used.
+Using -iter or -pbkdf2 would be better.
+picoCTF{su((3ss_(r@ck1ng_r3@_da099d93}
+```
+The complete, final Python code used is:
+```Python
+import math
+
+data = [(49, 4374671741411819653095065203638363839705760144524191633605358134684143978321095859047126585649272872908765432040943055399247499744070371810470682366100689),
+        (50, 4707619883686427763240856106433203231481313994680729548861877810439954027216515481620077982254465432294427487895036699854948548980054737181231034760249505),
+        (51,  1998517197048216725617978890728205902760633363770165103499700157925986170022682604311921651991344892635565706489644418147980643978563559991322776155635395),
+        (52, 3993239489061277327472930109138093827255646312769901312414509207541733524779884801267968848884701166599834406248783129646083261476137481855550108336137485),]
+
+def Find_N(data, e=65537):
+        a, b = data[0] #unpacking the tuple
+        val_N = b - pow(a, e)
+        for i,j in data[1:]:
+            tmp = j - pow(i, e)
+            val_N = math.gcd(tmp, val_N)
+        return abs(val_N)
+N=Find_N(data)
+print("Value of N is",N)
+
+e=65537
+password= int(4228273471152570993857755209040611143227336245190875847649142807501848960847851973658239485570030833999780269457000091948785164374915942471027917017922546)   
+x=10
+encrypted= (password * pow(x, e, N)) % N
+print("Modified value is",encrypted)
+
+# after checking the hex value in the oracle:
+fake_hex = "3ebcbe23c3a"
+p2 = int(fake_hex, 16)  #to conv to integer
+inv_s = pow(x, -1, N)
+m = (p2 * inv_s) % N
+
+k = (N.bit_length() + 7) // 8
+m_bytes = m.to_bytes(k, "big")
+
+print("m", m_bytes.rstrip(b'\x00').decode('utf-8'))
+```
+## Flag
+```
+picoCTF{su((3ss_(r@ck1ng_r3@_da099d93}
+```
+## Concepts Learnt
+- I learnt about cracking RSA encryption by getting various encrypted data and finding the value of N
+- I learnt the method used in RSA encryption
+- I learnt how to use Python to manipulate the data I have, to find the values required
+## References
+<https://www.cryptool.org/en/cto/rsa-step-by-step/>
 ***
 
 # 2. Custom encryption
