@@ -76,3 +76,38 @@ I learnt about PNG chunks and how a file could be corrupted if the chunks are in
 <https://medium.com/@0xwan/png-structure-for-beginner-8363ce2a9f73> \
 <https://www.libpng.org/pub/png/spec/1.2/PNG-Chunks.html#:~:text=The%20IDAT%20chunk%20contains%20the%20output%20datastream%20of%20the%20compression,of%20all%20the%20IDAT%20chunks>
 ***
+
+# RAR of the Abyss
+
+## Description
+> Two philosophers peer into the networked abyss and swap a secret. Use the secret to decrypt the Abyss’ RAwR and pull your flag from the void.
+
+## Solution
+I analysed the pcap file using Wireshark and saw that a few TCP protocols had messages in them. The first one being:
+<img width="1919" height="1022" alt="image" src="https://github.com/user-attachments/assets/bd08a340-7285-4a15-b95c-783cfd3c510c" />
+Continuing with this, I tried to find info on the RAR file. I saw that the ones with Length=0 had no useful info in them so I filtered them out using `tcp.len>0`
+Doing so made it much easier and I found the RAR file info and the password for it was `b3y0ndG00dand3vil`
+Then I followed the TCP stream and used the unrar tool to extract it's content. Hence I found the flag.
+
+```bash
+priya:~$ unrar x chall.rar
+
+UNRAR 6.11 beta 1 freeware      Copyright (c) 1993-2022 Alexander Roshal
+Enter password (will not be echoed) for chall.rar:
+
+
+Extracting from chall.rar
+
+Extracting  flag.txt                                                  OK
+All OK
+priya:~$ cat flag.txt
+nite{thus_sp0k3_th3_n3tw0rk_f0r3ns1cs_4n4lyst}
+```
+
+## Flag:
+```nite{thus_sp0k3_th3_n3tw0rk_f0r3ns1cs_4n4lyst}```
+
+## Concepts Learnt:
+I learnt how to get information by looking at the pcap file and how to extract contents of a password-protected RAR file using the urar tool. 
+
+***
